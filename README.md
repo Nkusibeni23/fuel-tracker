@@ -1,99 +1,99 @@
-# Car Fuel Tracker
+# My Personal Fuel Tracker
 
-A Java application for managing cars and tracking fuel consumption with a REST API backend and CLI client.
+My custom Java application built for tracking vehicle fuel usage with a powerful REST API backend and an easy-to-use command-line interface.
 
-## Project Structure
+## Project Overview
 
 ```
-car-fuel-tracker/
-├── backend/          # Backend REST API server
-└── cli/              # Command-line interface client
+my-fuel-tracker/
+├── backend/          # REST API server component
+└── cli/              # Terminal-based client application
 ```
 
-## Features
+## What This App Does
 
-### Backend (Part 1 & 2)
-- REST API for car and fuel management
-- In-memory storage (no database required)
-- Manual Java Servlet implementation
-- Error handling with proper HTTP status codes
+### Backend System (Core & Advanced)
+- Full REST API for vehicle and fuel record management
+- Uses in-memory data storage (no external database needed)
+- Custom Java Servlet implementation from scratch
+- Comprehensive error handling with standard HTTP status codes
 
-### CLI (Part 3)
-- Command-line interface for interacting with the backend
-- HTTP communication using `java.net.http.HttpClient`
-- Support for creating cars, adding fuel entries, and viewing statistics
+### Command Line Tool (Client App)
+- Terminal interface that connects to the backend service
+- Uses modern Java HTTP client for network communication
+- Handles vehicle creation, fuel logging, and performance analytics
 
-## Requirements
+## System Prerequisites
 
-- Java 11 or higher
-- Maven 3.6+
+- Java 11 or newer
+- Maven 3.6+ build tool
 
-## Building the Project
+## How to Build
 
-### Backend
+### Building the Server
 
 ```bash
 cd backend
 mvn clean package
 ```
 
-### CLI
+### Building the Client
 
 ```bash
 cd cli
 mvn clean package
 ```
 
-## Running the Application
+## Getting Started
 
-### 1. Start the Backend Server
+### Step 1: Launch the Server
 
 ```bash
 cd backend
 mvn exec:java
 ```
 
-The server will start on `http://localhost:8080`
+The server runs on `http://localhost:8080`
 
-### 2. Use the CLI Client
+### Step 2: Run the Client Tool
 
-In a separate terminal:
+Open another terminal window:
 
 ```bash
 cd cli
 mvn exec:java -Dexec.args="<command>"
 ```
 
-## CLI Commands
+## Available Commands
 
-### Create a Car
+### Adding a New Vehicle
 
 ```bash
 mvn exec:java -Dexec.args="create-car --brand Toyota --model Corolla --year 2018"
 ```
 
-### Add Fuel Entry
+### Recording Fuel Purchase
 
 ```bash
 mvn exec:java -Dexec.args="add-fuel --carId 1 --liters 40 --price 52.5 --odometer 45000"
 ```
 
-### View Fuel Statistics
+### Checking Fuel Performance
 
 ```bash
 mvn exec:java -Dexec.args="fuel-stats --carId 1"
 ```
 
-Expected output:
+Sample result:
 ```
 Total fuel: 120.0 L
 Total cost: 155.00
 Average consumption: 8.0 L/100km
 ```
 
-## API Endpoints
+## API Reference
 
-### REST API
+### Main REST Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -103,15 +103,15 @@ Average consumption: 8.0 L/100km
 | POST | `/api/cars/{id}/fuel` | Add fuel entry to a car |
 | GET | `/api/cars/{id}/fuel/stats` | Get fuel statistics for a car |
 
-### Servlet Endpoint
+### Legacy Servlet Route
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/servlet/fuel-stats?carId={id}` | Get fuel statistics (manual servlet implementation) |
 
-## API Request/Response Examples
+## API Usage Examples
 
-### Create Car
+### Vehicle Registration
 
 **Request:**
 ```json
@@ -134,7 +134,7 @@ POST /api/cars
 }
 ```
 
-### Add Fuel Entry
+### Fuel Log Entry
 
 **Request:**
 ```json
@@ -157,7 +157,7 @@ POST /api/cars/1/fuel
 }
 ```
 
-### Get Fuel Statistics
+### Performance Analytics
 
 **Request:**
 ```
@@ -174,34 +174,34 @@ GET /api/cars/1/fuel/stats
 }
 ```
 
-## Error Handling
+## Error Responses
 
-The API returns appropriate HTTP status codes:
-- `200 OK` - Successful request
-- `404 Not Found` - Car not found
-- `400 Bad Request` - Invalid request parameters
-- `500 Internal Server Error` - Server error
+The system provides clear HTTP status codes for different scenarios:
+- `200 OK` - Everything worked fine
+- `404 Not Found` - Vehicle doesn't exist
+- `400 Bad Request` - Invalid input data
+- `500 Internal Server Error` - Something went wrong on the server
 
-## Technical Details
+## Implementation Details
 
-### Backend
-- **Framework**: Spark Java (lightweight web framework)
-- **JSON Processing**: Jackson
-- **Storage**: In-memory (HashMap)
-- **Servlet**: Manual HttpServlet implementation
+### Server Architecture
+- **Web Framework**: Spark Java for lightweight routing
+- **Data Handling**: Jackson library for JSON operations
+- **Data Storage**: Simple in-memory HashMap (no external DB)
+- **Servlet Layer**: Custom HttpServlet built manually
 
-### CLI
-- **HTTP Client**: `java.net.http.HttpClient` (Java 11+)
-- **JSON Processing**: Jackson
-- **Argument Parsing**: Custom parser
+### Client Application
+- **Network Layer**: Modern Java HttpClient (Java 11+)
+- **Data Processing**: Jackson for JSON serialization
+- **Command Parser**: Custom-built argument processing
 
-## Development Notes
+## Important Notes
 
-- The backend uses in-memory storage, so data is lost when the server stops
-- The servlet implementation demonstrates manual request/response handling
-- All endpoints return JSON responses
-- CORS is enabled for cross-origin requests
+- Data is stored in memory only, so it disappears when the server shuts down
+- The servlet shows how to handle HTTP requests manually
+- Every API response is formatted as JSON
+- Cross-origin requests are allowed with CORS
 
-## License
+## Project Status
 
-This project is part of a technical assignment.
+This is my personal fuel tracking project - built for learning and practical use.

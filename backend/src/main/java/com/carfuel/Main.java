@@ -56,6 +56,6 @@ public class Main {
             return "";
         });
 
-        logger.info("Car Fuel Management Backend is running on port 8080");
+        logger.info("My Fuel Tracker API Server is up and running on port 8080!");
     }
 }
