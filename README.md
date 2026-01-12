@@ -213,7 +213,3 @@ The system provides clear HTTP status codes for different scenarios:
 - The servlet shows how to handle HTTP requests manually
 - Every API response is formatted as JSON
 - Cross-origin requests are allowed with CORS
-
-## Project Status
-
-This is my personal fuel tracking project - built for learning and practical use.
