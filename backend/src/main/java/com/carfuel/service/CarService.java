@@ -14,7 +14,18 @@ public class CarService {
 
     // CREATE CAR
     public Car createCar(String brand, String model, int year) {
-        Car car = new Car(carIdCounter++, brand, model, year);
+        // Validate input parameters
+        if (brand == null || brand.trim().isEmpty()) {
+            throw new IllegalArgumentException("Brand cannot be null or empty");
+        }
+        if (model == null || model.trim().isEmpty()) {
+            throw new IllegalArgumentException("Model cannot be null or empty");
+        }
+        if (year < 1900 || year > 2100) {
+            throw new IllegalArgumentException("Year must be between 1900 and 2100");
+        }
+        
+        Car car = new Car(carIdCounter++, brand.trim(), model.trim(), year);
         cars.put(car.getId(), car);
         return car;
     }
@@ -31,9 +42,20 @@ public class CarService {
 
     // ADD FUEL ENTRY TO CAR
     public FuelEntry addFuelEntry(int carId, double liters, double price, double odometer) {
+        // Validate input parameters
+        if (liters <= 0) {
+            throw new IllegalArgumentException("Liters must be a positive number");
+        }
+        if (price < 0) {
+            throw new IllegalArgumentException("Price cannot be negative");
+        }
+        if (odometer < 0) {
+            throw new IllegalArgumentException("Odometer cannot be negative");
+        }
+        
         Car car = cars.get(carId);
         if (car == null) {
-            return null; // Or throw an exception
+            return null; // Car not found - controller will handle this
         }
         FuelEntry fuelEntry = new FuelEntry(fuelIdCounter++, liters, price, odometer);
         car.getFuelEntries().add(fuelEntry);
@@ -135,5 +157,10 @@ public class CarService {
                 "totalCost", totalCost,
                 "averageConsumption", averageConsumption,
                 "totalDistance", totalDistance);
+    }
+
+    public boolean deleteCar(int carId) {
+        Car removed = cars.remove(carId);
+        return removed != null;
     }
 }

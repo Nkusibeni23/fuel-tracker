@@ -16,8 +16,9 @@ public class Main {
     private static final Logger logger = Logger.getLogger(Main.class.getName());
 
     public static void main(String[] args) {
-
-        port(8080); // Set the port
+        // throw new RuntimeException("Error: Server cannot start!");
+        
+        port(8080); 
 
         // Enable CORS
         options("/*", (request, response) -> {

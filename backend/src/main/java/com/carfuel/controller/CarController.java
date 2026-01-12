@@ -19,95 +19,240 @@ public class CarController {
         this.objectMapper.registerModule(new JavaTimeModule());
     }
 
-    // Methods to handle HTTP requests would go here
     public void initRoutes() {
         post("/api/cars", (req, res) -> {
             res.type("application/json");
+            try {
+                // Parse JSON from request
+                Map<String, Object> carData;
+                try {
+                    carData = objectMapper.readValue(
+                        req.body(), 
+                        new TypeReference<Map<String, Object>>() {}
+                    );
+                } catch (Exception e) {
+                    res.status(400);
+                    return "{\"error\":\"Invalid JSON format\"}";
+                }
+                
+                String brand = (String) carData.get("brand");
+                String model = (String) carData.get("model");
+                Number yearNum = (Number) carData.get("year");
+                int year = yearNum != null ? yearNum.intValue() : 0;
 
-            // Parse JSON from request
-            Map<String, Object> carData = objectMapper.readValue(
-                req.body(), 
-                new TypeReference<Map<String, Object>>() {}
-            );
-            String brand = (String) carData.get("brand");
-            String model = (String) carData.get("model");
-            // Handle year as Number (could be Integer or Long from JSON)
-            Number yearNum = (Number) carData.get("year");
-            int year = yearNum != null ? yearNum.intValue() : 0;
+                if (brand == null || brand.trim().isEmpty()) {
+                    res.status(400);
+                    return "{\"error\":\"Missing or empty required field: brand\"}";
+                }
+                if (model == null || model.trim().isEmpty()) {
+                    res.status(400);
+                    return "{\"error\":\"Missing or empty required field: model\"}";
+                }
+                if (year == 0 || year < 1900 || year > 2100) {
+                    res.status(400);
+                    return "{\"error\":\"Invalid year: must be between 1900 and 2100\"}";
+                }
 
-            if (brand == null || model == null || year == 0) {
+                Car car = carService.createCar(brand.trim(), model.trim(), year);
+                try {
+                    return objectMapper.writeValueAsString(car);
+                } catch (Exception jsonEx) {
+                    res.status(500);
+                    return "{\"error\":\"Internal server error: Failed to serialize response\"}";
+                }
+            } catch (IllegalArgumentException e) {
                 res.status(400);
-                return objectMapper.writeValueAsString(Map.of("error", "Missing required fields: brand, model, year"));
+                try {
+                    return objectMapper.writeValueAsString(Map.of("error", e.getMessage()));
+                } catch (Exception jsonEx) {
+                    return "{\"error\":\"Invalid request\"}";
+                }
+            } catch (Exception e) {
+                res.status(500);
+                return "{\"error\":\"Internal server error\"}";
             }
-
-            Car car = carService.createCar(brand, model, year);
-            return objectMapper.writeValueAsString(car);
         });
 
         get("/api/cars", (req, res) -> {
             res.type("application/json");
-            return objectMapper.writeValueAsString(carService.getAllCars());
+            try {
+                return objectMapper.writeValueAsString(carService.getAllCars());
+            } catch (Exception e) {
+                res.status(500);
+                return "{\"error\":\"Internal server error\"}";
+            }
         });
 
         get("/api/cars/:id", (req, res) -> {
             res.type("application/json");
-            int carId = Integer.parseInt(req.params(":id"));
-            Car car = carService.getCarById(carId);
-            if (car == null) {
-                res.status(404);
-                return objectMapper.writeValueAsString(Map.of("error", "Car not found"));
+            try {
+                int carId = Integer.parseInt(req.params(":id"));
+                Car car = carService.getCarById(carId);
+                if (car == null) {
+                    res.status(404);
+                    return "{\"error\":\"Car not found with ID: " + carId + "\"}";
+                }
+                try {
+                    return objectMapper.writeValueAsString(car);
+                } catch (Exception jsonEx) {
+                    res.status(500);
+                    return "{\"error\":\"Internal server error\"}";
+                }
+            } catch (NumberFormatException e) {
+                res.status(400);
+                return "{\"error\":\"Invalid car ID format: " + req.params(":id") + "\"}";
+            } catch (IllegalArgumentException e) {
+                res.status(400);
+                return "{\"error\":\"" + e.getMessage().replace("\"", "\\\"") + "\"}";
+            } catch (Exception e) {
+                res.status(500);
+                return "{\"error\":\"Internal server error\"}";
             }
-            return objectMapper.writeValueAsString(car);
         });
 
         post("/api/cars/:id/fuel", (req, res) -> {
             res.type("application/json");
-            int carId = Integer.parseInt(req.params(":id"));
-            Map<String, Object> fuelData = objectMapper.readValue(
-                req.body(), 
-                new TypeReference<Map<String, Object>>() {}
-            );
+            try {
+                int carId = Integer.parseInt(req.params(":id"));
+                
+                // Parse JSON body
+                Map<String, Object> fuelData;
+                try {
+                    fuelData = objectMapper.readValue(
+                        req.body(), 
+                        new TypeReference<Map<String, Object>>() {}
+                    );
+                } catch (Exception e) {
+                    res.status(400);
+                    return "{\"error\":\"Invalid JSON format\"}";
+                }
 
-            // Handle numbers that might come as Double, Integer, or Long from JSON
-            Number litersNum = (Number) fuelData.get("liters");
-            Number priceNum = (Number) fuelData.get("price");
-            Number odometerNum = (Number) fuelData.get("odometer");
+                Number litersNum = (Number) fuelData.get("liters");
+                Number priceNum = (Number) fuelData.get("price");
+                Number odometerNum = (Number) fuelData.get("odometer");
 
-            if (litersNum == null || priceNum == null || odometerNum == null) {
+                if (litersNum == null || priceNum == null || odometerNum == null) {
+                    res.status(400);
+                    return "{\"error\":\"Missing required fields: liters, price, odometer\"}";
+                }
+
+                double liters = litersNum.doubleValue();
+                double price = priceNum.doubleValue();
+                double odometer = odometerNum.doubleValue();
+
+                // Validate values
+                if (liters <= 0) {
+                    res.status(400);
+                    return "{\"error\":\"Liters must be a positive number\"}";
+                }
+                if (price < 0) {
+                    res.status(400);
+                    return "{\"error\":\"Price cannot be negative\"}";
+                }
+                if (odometer < 0) {
+                    res.status(400);
+                    return "{\"error\":\"Odometer cannot be negative\"}";
+                }
+
+                FuelEntry fuelEntry = carService.addFuelEntry(carId, liters, price, odometer);
+
+                if (fuelEntry == null) {
+                    res.status(404);
+                    return "{\"error\":\"Car not found with ID: " + carId + "\"}";
+                }
+                try {
+                    return objectMapper.writeValueAsString(fuelEntry);
+                } catch (Exception jsonEx) {
+                    res.status(500);
+                    return "{\"error\":\"Internal server error\"}";
+                }
+            } catch (NumberFormatException e) {
                 res.status(400);
-                return objectMapper.writeValueAsString(Map.of("error", "Missing required fields: liters, price, odometer"));
+                return "{\"error\":\"Invalid car ID format: " + req.params(":id") + "\"}";
+            } catch (IllegalArgumentException e) {
+                res.status(400);
+                return "{\"error\":\"" + e.getMessage().replace("\"", "\\\"") + "\"}";
+            } catch (Exception e) {
+                res.status(500);
+                return "{\"error\":\"Internal server error\"}";
             }
-
-            double liters = litersNum.doubleValue();
-            double price = priceNum.doubleValue();
-            double odometer = odometerNum.doubleValue();
-
-            FuelEntry fuelEntry = carService.addFuelEntry(carId, liters, price, odometer);
-
-            if (fuelEntry == null) {
-                res.status(404);
-                return objectMapper.writeValueAsString(Map.of("error", "Car not found"));
-            }
-            return objectMapper.writeValueAsString(fuelEntry);
         });
 
-        get("/api/cars/:id/fuel/stats", (req, res) -> {
+        get("/api/cars/:id/fuel/stats", (req, res) -> { 
             res.type("application/json");
-            int carId = Integer.parseInt(req.params(":id"));
-            Map<String, Object> stats = carService.calculateStats(carId);
+            try {
+                int carId = Integer.parseInt(req.params(":id"));
+                Map<String, Object> stats = carService.calculateStats(carId);
 
-            if (stats == null) {
-                res.status(404);
-                return objectMapper.writeValueAsString(Map.of("error", "Car not found"));
+                if (stats == null) {
+                    res.status(404);
+                    return "{\"error\":\"Car not found with ID: " + carId + "\"}";
+                }
+                try {
+                    return objectMapper.writeValueAsString(stats);
+                } catch (Exception jsonEx) {
+                    res.status(500);
+                    return "{\"error\":\"Internal server error\"}";
+                }
+            } catch (NumberFormatException e) {
+                res.status(400);
+                return "{\"error\":\"Invalid car ID format: " + req.params(":id") + "\"}";
+            } catch (IllegalArgumentException e) {
+                res.status(400);
+                return "{\"error\":\"" + e.getMessage().replace("\"", "\\\"") + "\"}";
+            } catch (Exception e) {
+                res.status(500);
+                return "{\"error\":\"Internal server error\"}";
             }
-            return objectMapper.writeValueAsString(stats);
+        });
+
+        delete("/api/cars/:id", (req, res) -> {
+            res.type("application/json");
+            try {
+                int carId = Integer.parseInt(req.params(":id"));
+                boolean deleted = carService.deleteCar(carId);
+                if (!deleted) {
+                    res.status(404);
+                    return "{\"error\":\"Car not found with ID: " + carId + "\"}";
+                }
+                return "{\"message\":\"Car deleted successfully\"}";
+            } catch (NumberFormatException e) {
+                res.status(400);
+                return "{\"error\":\"Invalid car ID format: " + req.params(":id") + "\"}";
+            } catch (IllegalArgumentException e) {
+                res.status(400);
+                return "{\"error\":\"" + e.getMessage().replace("\"", "\\\"") + "\"}";
+            } catch (Exception e) {
+                res.status(500);
+                return "{\"error\":\"Internal server error\"}";
+            }
+        });
+
+        exception(NumberFormatException.class, (e, req, res) -> {
+            res.type("application/json");
+            res.status(400);
+            try {
+                res.body(objectMapper.writeValueAsString(Map.of("error", "Invalid number format: " + e.getMessage())));
+            } catch (Exception ex) {
+                res.body("{\"error\":\"Invalid number format\"}");
+            }
+        });
+
+        exception(IllegalArgumentException.class, (e, req, res) -> {
+            res.type("application/json");
+            res.status(400);
+            try {
+                res.body(objectMapper.writeValueAsString(Map.of("error", e.getMessage())));
+            } catch (Exception ex) {
+                res.body("{\"error\":\"Invalid request\"}");
+            }
         });
 
         exception(Exception.class, (e, req, res) -> {
             res.type("application/json");
             res.status(500);
             try {
-                res.body(objectMapper.writeValueAsString(Map.of("error", e.getMessage() != null ? e.getMessage() : "Internal server error")));
+                res.body(objectMapper.writeValueAsString(Map.of("error", "Internal server error")));
             } catch (Exception ex) {
                 res.body("{\"error\":\"Internal server error\"}");
             }
