@@ -13,12 +13,14 @@ my-fuel-tracker/
 ## What This App Does
 
 ### Backend System (Core & Advanced)
+
 - Full REST API for vehicle and fuel record management
 - Uses in-memory data storage (no external database needed)
 - Custom Java Servlet implementation from scratch
 - Comprehensive error handling with standard HTTP status codes
 
 ### Command Line Tool (Client App)
+
 - Terminal interface that connects to the backend service
 - Uses modern Java HTTP client for network communication
 - Handles vehicle creation, fuel logging, and performance analytics
@@ -85,6 +87,7 @@ mvn exec:java -Dexec.args="fuel-stats --carId 1"
 ```
 
 Sample result:
+
 ```
 Total fuel: 120.0 L
 Total cost: 155.00
@@ -114,6 +117,7 @@ Average consumption: 8.0 L/100km
 ### Vehicle Registration
 
 **Request:**
+
 ```json
 POST /api/cars
 {
@@ -124,6 +128,7 @@ POST /api/cars
 ```
 
 **Response:**
+
 ```json
 {
   "id": 1,
@@ -137,6 +142,7 @@ POST /api/cars
 ### Fuel Log Entry
 
 **Request:**
+
 ```json
 POST /api/cars/1/fuel
 {
@@ -147,6 +153,7 @@ POST /api/cars/1/fuel
 ```
 
 **Response:**
+
 ```json
 {
   "id": 1,
@@ -160,11 +167,13 @@ POST /api/cars/1/fuel
 ### Performance Analytics
 
 **Request:**
+
 ```
 GET /api/cars/1/fuel/stats
 ```
 
 **Response:**
+
 ```json
 {
   "totalFuel": 120.0,
@@ -177,6 +186,7 @@ GET /api/cars/1/fuel/stats
 ## Error Responses
 
 The system provides clear HTTP status codes for different scenarios:
+
 - `200 OK` - Everything worked fine
 - `404 Not Found` - Vehicle doesn't exist
 - `400 Bad Request` - Invalid input data
@@ -185,12 +195,14 @@ The system provides clear HTTP status codes for different scenarios:
 ## Implementation Details
 
 ### Server Architecture
+
 - **Web Framework**: Spark Java for lightweight routing
 - **Data Handling**: Jackson library for JSON operations
 - **Data Storage**: Simple in-memory HashMap (no external DB)
 - **Servlet Layer**: Custom HttpServlet built manually
 
 ### Client Application
+
 - **Network Layer**: Modern Java HttpClient (Java 11+)
 - **Data Processing**: Jackson for JSON serialization
 - **Command Parser**: Custom-built argument processing

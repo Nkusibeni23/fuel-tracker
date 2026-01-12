@@ -55,7 +55,7 @@ public class CarService {
         
         Car car = cars.get(carId);
         if (car == null) {
-            return null; // Car not found - controller will handle this
+            return null; 
         }
         FuelEntry fuelEntry = new FuelEntry(fuelIdCounter++, liters, price, odometer);
         car.getFuelEntries().add(fuelEntry);
